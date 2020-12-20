@@ -7,12 +7,16 @@ import tempfile
 
 from markdown_it import MarkdownIt
 
-__version__ = "0.2"
+__version__ = "0.3"
 
 
 def build_command(command, name):
     """
     Insert a filename into an executable command where appropriate.
+
+    The command uses a simplified case of printf-style substitution:
+    each %s is replaced with the filename. All other %* is ignored. If
+    no %s is present, the name is appended to the command.
     """
     return command + " " + name
 
@@ -39,14 +43,18 @@ if __name__ == "__main__":
         description="Concatenate tagged Markdown code fences and execute the result."
     )
     parser.add_argument("file", help="Markdown file to parse")
+    parser.add_argument("language", help="Language to run")
     parser.add_argument(
-        "-l", "--lang", metavar=("language", "command"), nargs=2, help="blah"
+        "-e",
+        "--exec",
+        metavar="command",
+        help="Command to execute the concatenated code. If not specified, the language will be used.",
     )
     args = parser.parse_args()
 
     with open(args.file) as f:
         text = f.read()
 
-    lang = args.lang if args.lang is not None else ("python", "python3")
+    cmd = args.exec if args.exec is not None else args.language
 
-    sys.exit(runmd(text, *lang).returncode)
+    sys.exit(runmd(text, args.language, cmd).returncode)
