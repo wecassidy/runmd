@@ -1,6 +1,9 @@
 #!/usr/bin/env python3
 
 import argparse
+import subprocess
+import sys
+import tempfile
 
 from markdown_it import MarkdownIt
 
@@ -21,4 +24,10 @@ if __name__ == "__main__":
     code = "".join(
         t.content for t in tokens if t.type == "fence" and t.info.lower() == "python"
     )
-    print(code)
+
+    with tempfile.NamedTemporaryFile() as fp:
+        fp.write(code.encode("UTF-8"))
+        fp.seek(0)
+        result = subprocess.run(["python3", fp.name])
+
+    sys.exit(result.returncode)
