@@ -45,11 +45,17 @@ def build_command(command, name):
     return cmd
 
 
-def runmd(text, language, command):
+def check_language_tag(token, lang, include_untagged):
+    return token.info == lang or (include_untagged and token.info == "")
+
+
+def runmd(text, language, command, include_untagged):
     md = MarkdownIt("commonmark")
     tokens = md.parse(text)
     code = "".join(
-        t.content for t in tokens if t.type == "fence" and t.info.lower() == language
+        t.content
+        for t in tokens
+        if t.type == "fence" and check_language_tag(t, language, include_untagged)
     )
 
     with tempfile.NamedTemporaryFile() as fp:
@@ -74,6 +80,9 @@ if __name__ == "__main__":
         metavar="command",
         help="Command to execute the concatenated code. If not specified, the language will be used.",
     )
+    parser.add_argument(
+        "-u", "--untagged", action="store_true", help="Include untagged blocks"
+    )
     args = parser.parse_args()
 
     with open(args.file) as f:
@@ -81,4 +90,4 @@ if __name__ == "__main__":
 
     cmd = args.exec if args.exec is not None else args.language
 
-    sys.exit(runmd(text, args.language, cmd).returncode)
+    sys.exit(runmd(text, args.language, cmd, args.untagged).returncode)
