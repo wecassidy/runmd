@@ -20,11 +20,15 @@ runs the resulting file.
    ````
 2. Run the script
    ```bash
-   $ python3 runmd.py input_file.md
+   $ python3 runmd.py input_file.md python --exec python3
    Hello, world!
    Here's more code!
    3
    ```
+
+Untagged code blocks can be included with `--untagged`. Use `--exec
+cmd` if the name of the language doesn't match the command to execute
+it. `python3 runmd.py --help` for more information.
 
 ## How it works
 
@@ -33,9 +37,3 @@ indicating the code is of a supported language (see
 https://spec.commonmark.org/0.29/#fenced-code-blocks). It then
 concatenates all code blocks of the same language into a temporary
 file and executes that file.
-
-If more than one supported language is present in the input file, the
-languages are executed in the order they appear: for example, if the
-first and third code blocks are in Python and the second is in Ruby,
-first the Python file is run and then the Ruby. For obvious reasons,
-it is a terrible idea to rely on this behaviour.
