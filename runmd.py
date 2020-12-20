@@ -4,6 +4,7 @@ import argparse
 import subprocess
 import sys
 import tempfile
+import textwrap
 
 from markdown_it import MarkdownIt
 
@@ -70,15 +71,41 @@ def runmd(text, language, command, include_untagged):
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(
-        description="Concatenate tagged Markdown code fences and execute the result."
+        description="Concatenate tagged Markdown code fences and execute the result.",
+        epilog=textwrap.dedent(
+            """
+            EXEC EXAMPLES
+              No --exec: -> `language tempfile`
+
+              Appending: `--exec cmd` -> `cmd tempfile`
+
+              Substitution: `--exec 'cmd %s --format "%s %d %%s"` -> `cmd tempfile --format "tempfile %d %s"`
+            """
+        ),
+        formatter_class=argparse.RawDescriptionHelpFormatter,
     )
-    parser.add_argument("file", help="Markdown file to parse")
-    parser.add_argument("language", help="Language to run")
+    parser.add_argument(
+        "file",
+        help="Markdown file to parse for code blocks. runmd expects a Commonmark-compliant file.",
+    )
+    parser.add_argument("language", help="Language to extract")
     parser.add_argument(
         "-e",
         "--exec",
         metavar="command",
-        help="Command to execute the concatenated code. If not specified, the language will be used.",
+        # I'm sorry for the % pileup, but it turns out argparse uses
+        # printf-style formatting internally so they must be escaped.
+        help="""
+             Command to execute the concatenated code. If not
+             specified, the language name will be used as the command.
+             By default, the temporary file concatenated code is added
+             as the last argument to the script. Alternatively, a
+             simple printf-like format can be used: all occurences of
+             %%s are replaced by the temporary file containing the
+             concatenated code. All other %%* are ignored. Use %% to
+             escape a %%: "%%%%s" becomes "%%s" rather than "%%temp_file".
+             See EXEC EXAMPLES.
+             """,
     )
     parser.add_argument(
         "-u", "--untagged", action="store_true", help="Include untagged blocks"
