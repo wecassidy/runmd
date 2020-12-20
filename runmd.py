@@ -15,10 +15,34 @@ def build_command(command, name):
     Insert a filename into an executable command where appropriate.
 
     The command uses a simplified case of printf-style substitution:
-    each %s is replaced with the filename. All other %* is ignored. If
-    no %s is present, the name is appended to the command.
+    each %s is replaced with the filename. To escape a %, use %%. All
+    other %* are ignored. If no %s is present, the name is appended to
+    the command.
     """
-    return command + " " + name
+    cmd = ""
+    last_mod = False
+    no_sub = True
+    for i, char in enumerate(command):
+        if last_mod:
+            last_mod = False
+            if char == "s":
+                cmd += name
+                no_sub = False
+            elif char == "%":
+                cmd += "%"
+            else:
+                cmd += "%" + char
+        elif char != "%":
+            cmd += char
+        else:
+            last_mod = True
+    if last_mod:
+        cmd += "%"
+
+    if no_sub:
+        cmd += " " + name
+
+    return cmd
 
 
 def runmd(text, language, command):
