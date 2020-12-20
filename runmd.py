@@ -9,6 +9,22 @@ from markdown_it import MarkdownIt
 
 __version__ = "0.1"
 
+
+def runmd(text):
+    md = MarkdownIt("commonmark")
+    tokens = md.parse(text)
+    code = "".join(
+        t.content for t in tokens if t.type == "fence" and t.info.lower() == "python"
+    )
+
+    with tempfile.NamedTemporaryFile() as fp:
+        fp.write(code.encode("UTF-8"))
+        fp.seek(0)
+        result = subprocess.run(["python3", fp.name], check=False)
+
+    return result
+
+
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(
         description="Concatenate tagged Markdown code fences and execute the result."
@@ -19,15 +35,4 @@ if __name__ == "__main__":
     with open(args.file) as f:
         text = f.read()
 
-    md = MarkdownIt("commonmark")
-    tokens = md.parse(text)
-    code = "".join(
-        t.content for t in tokens if t.type == "fence" and t.info.lower() == "python"
-    )
-
-    with tempfile.NamedTemporaryFile() as fp:
-        fp.write(code.encode("UTF-8"))
-        fp.seek(0)
-        result = subprocess.run(["python3", fp.name])
-
-    sys.exit(result.returncode)
+    sys.exit(runmd(text).returncode)
