@@ -10,17 +10,17 @@ from markdown_it import MarkdownIt
 __version__ = "0.1"
 
 
-def runmd(text):
+def runmd(text, language, command):
     md = MarkdownIt("commonmark")
     tokens = md.parse(text)
     code = "".join(
-        t.content for t in tokens if t.type == "fence" and t.info.lower() == "python"
+        t.content for t in tokens if t.type == "fence" and t.info.lower() == language
     )
 
     with tempfile.NamedTemporaryFile() as fp:
         fp.write(code.encode("UTF-8"))
         fp.seek(0)
-        result = subprocess.run(["python3", fp.name], check=False)
+        result = subprocess.run(command + [fp.name], check=False)
 
     return result
 
@@ -35,4 +35,4 @@ if __name__ == "__main__":
     with open(args.file) as f:
         text = f.read()
 
-    sys.exit(runmd(text).returncode)
+    sys.exit(runmd(text, "python", ["python3"]).returncode)
