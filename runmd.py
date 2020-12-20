@@ -71,7 +71,11 @@ def runmd(text, language, command, include_untagged):
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(
-        description="Concatenate tagged Markdown code fences and execute the result.",
+        description="""
+                    Concatenate tagged Markdown code fences and
+                    execute the result. The error code of runmd is the
+                    same as the error code of the executed code.
+                    """,
         epilog=textwrap.dedent(
             """
             EXEC EXAMPLES
